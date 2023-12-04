@@ -45,7 +45,20 @@ splitParts s =
     map(toNumbers . splitRgb) (splitSets ';' (drop 2 cubes))
   )
 
+class RgbTuple a where
+  combineMax :: a -> a -> a
+
+pow (r, g, b) = r * g * b
+
+instance Ord a => RgbTuple (a, a, a) where
+  combineMax (r1, g1, b1) (r2, g2, b2) = (max r1 r2, max g1 g2, max b1 b2)
+
 main = do
   values <- readFile "./values.txt"
 
-  print . foldr (+) 0 . map(\(g, x) -> g) . filter (\(g, x) -> isValidSet x) . fmap(splitParts) . lines $ values
+  let parsedValues = fmap(splitParts) . lines $ values
+
+  print "IDs total: "
+  print $ show (foldr (+) 0 . map(\(g, x) -> g) . filter (\(g, x) -> isValidSet x) $ parsedValues)
+  print "Power total: "
+  print . foldr (+) 0 . map (\(_, x) -> pow $ foldr combineMax (0, 0, 0) x) $ parsedValues 
