@@ -41,7 +41,7 @@ toInt x = case x of
 findTokens :: String -> Integer
 findTokens s = do
   let (token, rest) = findToken $ s
-  let lastToken = unwrapToken (expandToken rest 1);
+  let lastToken = unwrapToken (expandToken s 1);
 
   read ((toInt $ token) ++ (toInt $ lastToken)) :: Integer
 
