@@ -28,8 +28,17 @@ reduceNumbers c ((y, v):sx) =
 toBoundary :: Integer -> Integer -> String -> TextBoundary (Coordinate Integer Integer) (Coordinate Integer Integer) String
 toBoundary x y v = TextBoundary (Coordinate (x-1) (y-1)) (Coordinate (x+1) (y+(toInteger $ length v))) v
 
+isWithin :: Coordinate Integer Integer -> TextBoundary (Coordinate Integer Integer) (Coordinate Integer Integer) String -> Bool
+isWithin c b = ((x c) `elem` [(x $ start b)..(x $ end b)]) && ((y c) `elem` [(y $ start b)..(y $ end b)])
+
 findCoord :: [((Coordinate Integer Integer), Char)] -> (TextBoundary (Coordinate Integer Integer) (Coordinate Integer Integer) String) -> Bool
-findCoord c b = isJust $ find (\(co, _) -> ((x co) `elem` [(x $ start b)..(x $ end b)]) && ((y co) `elem` [(y $ start b)..(y $ end b)])) c
+findCoord c b = isJust $ find (\(co, _) -> isWithin co b) c
+
+findRatio :: Coordinate Integer Integer -> [TextBoundary (Coordinate Integer Integer) (Coordinate Integer Integer) String] -> [String] -> [String]
+findRatio c [] a = a
+findRatio c (s:sx) a
+  | isWithin c s = findRatio c sx (a ++ [text s])
+  | otherwise = findRatio c sx a
 
 main = do
   values <- readFile "./values.txt"
@@ -42,6 +51,8 @@ main = do
   let textBoundaries = (map (\(x, r) -> map (\(y, v) -> toBoundary x y v) r) $ matrixText) >>= \l -> l
   let findCoord' = findCoord $ symbolCoordinates
 
+  print "Total part numbers"
   print $ foldr (+) 0 $ map (\b -> read (text b) :: Integer) $ filter (\b -> findCoord' b) textBoundaries
-  -- print $ map (\b -> read (text b) :: Integer) $ filter (\b -> findCoord' b) textBoundaries
+  print "Gear ratios"
+  print $ foldr (+) 0 $ map (\l -> foldr (*) 1 $ map (\v -> read v :: Integer) l) $ filter (\l -> (length l) == 2) $ map (\(c, _) -> findRatio c textBoundaries []) $ filter (\(_, v) -> v == '*') symbolCoordinates
 
