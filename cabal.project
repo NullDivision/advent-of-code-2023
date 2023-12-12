@@ -1,1 +1,1 @@
-packages: day4/*.cabal
+packages: **/*.cabal
